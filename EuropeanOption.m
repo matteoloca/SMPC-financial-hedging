@@ -34,6 +34,7 @@ iPath = 1;                   % Counter for the trial index
 T = 0;                       % Initialize time-to-expiry
 tStart = 0;  
 tt=0;% Initialize sample time
+variance=zeros(numPaths,numTimes);
 
 f.Sim = @sim;     % End-of-period processing function
 f.OptionPrice = @getOptionPrice; % Barrier option pricing utility
@@ -41,6 +42,7 @@ f.FinalOptionPrices=@getFinalOptionPrices;
 f.StandardError = @getStandardError;    % Standard error calculator utility
 f.AllOptionPrices=@getAllOptionPrices;
 f.Prices = @getPrices;
+f.Variance= @getVariance;
 
 function X = sim(t,X)
   tt=tt+1;
@@ -53,13 +55,22 @@ function X = sim(t,X)
   %if not(iPath==1 && iTime==1)  % Simulation is live
   if t==0
       prices(:,1) = X(1);
+      if size(X,1)>1
+        variance(:,1) = X(2);
+      end
       iTime = iTime + 1;
   else
      if iTime < numTimes
         prices(iPath,iTime) = X(1);
+        if (size(X,1)>1)
+            variance(iPath,iTime) = X(2);
+        end
         iTime = iTime + 1; % Update the period counter
      else % The last period of the current path
         prices(iPath,numTimes) = X(1); % Save the terminal price for this path
+         if size(X,1)>1
+            variance(iPath,numTimes) = X(2);
+         end
         iTime = 2;         % Re-set the time period counter
         iPath = iPath + 1; % A new path will begin next time
         T = t - tStart;    % Accumulate the time-to-expiration
@@ -93,20 +104,24 @@ value = exp(-rate*T)*max(prices(:,numTimes)-strike,0);
 end
 
 function value = getPrices()
-  value=prices;
+  value=prices(1,:);
 end
 
-function value = getStandardError(strike,rate,Antithetic)
-    
-  %values = zeros(numPaths,1);
-  %i = 1:1:numPaths %maximum > barrier; % Paths on which barrier was exceeded
-  values = exp(-rate*T)*max(prices-strike,0);
-  if (nargin >= 4) && Antithetic
-     value = std((values(1:2:end-1)+values(2:2:end))/2)/sqrt(numPaths/2);
-  else
-     value = std(values)/sqrt(numPaths);
-  end
-  
+function value =getVariance()
+    value=variance(1,:);
 end
+
+% function value = getStandardError(strike,rate,Antithetic)
+%     
+%   %values = zeros(numPaths,1);
+%   %i = 1:1:numPaths %maximum > barrier; % Paths on which barrier was exceeded
+%   values = exp(-rate*T)*max(prices-strike,0);
+%   if (nargin >= 4) && Antithetic
+%      value = std((values(1:2:end-1)+values(2:2:end))/2)/sqrt(numPaths/2);
+%   else
+%      value = std(values)/sqrt(numPaths);
+%   end
+%   
+% end
 
 end % End of outer/primary function

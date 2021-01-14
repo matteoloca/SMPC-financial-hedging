@@ -1,25 +1,29 @@
-function P = GenerateHestonOptionEvolution(strike,w0,N,type,mu,sigma,theta1,k,T,dt,r,y1,barrier,C)
+function P = GenerateHestonOptionEvolution(strike,w0,N,type,mu,rho1,theta1,k,T,dt,r,y1,omega1,barrier,C,fixDates)
 %GENERATEPRICESEVOLUTION Summary of this function goes here
 %   Detailed explanation goes here
 
-
-mdl=gbm(mu,sigma,'StartState',w0);
+hst=heston(mu,theta1,k,omega1,'StartState',[w0 y1]');
+hst.Correlation=[1 rho1; rho1 1];
 
 if (strcmp(type,'barrier')==1)
-    OptModel=BarrierOption(T+1,N);
+    OptModel=BarrierOption(T+2,N);
 else
     if(strcmp(type,'cliquet')==1)
-        
+        OptModel=NapoleonCliquet(T+2,N,fixDates);
     else
-        OptModel=EuropeanOption(T+1,N);
+        OptModel=EuropeanOption(T+2,N);
     end
 end
-mdl.simulate(T,'DeltaTime',dt,'nTrials',N,'Processes',OptModel.Sim);
+hst.simulate(T+1,'DeltaTime',dt,'nTrials',N,'Processes',OptModel.Sim);
 
 if (strcmp(type,'barrier')==1)
     P=OptModel.OptionPrice(strike,r,barrier);
 else
-    P=OptModel.OptionPrice(strike,r);
+    if (strcmp(type,'cliquet')==1)
+        P=(OptModel.OptionPrice(strike,r,C))';
+    else
+        P=OptModel.OptionPrice(strike,r);
+    end
 end
 
 end

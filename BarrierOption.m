@@ -29,10 +29,11 @@ function f = BarrierOption(numTimes,numPaths)
 
 prices = zeros(numPaths,numTimes);  % Pre-allocate terminal price vector
 maximum = zeros(numPaths,1); % Pre-allocate maximum  price vector
-iTime = 0;                   % Counter for the period index
+iTime = 1;                   % Counter for the period index
 iPath = 1;                   % Counter for the trial index
 T = 0;                       % Initialize time-to-expiry
 tStart = 0;                  % Initialize sample time
+variance=zeros(numPaths,numTimes);
 
 f.Sim = @sim;     % End-of-period processing function
 f.OptionPrice = @getBarrierOptionPrice;% Barrier option pricing utility
@@ -40,20 +41,29 @@ f.FinalOptionPrices=@getFinalBarrierOptionPrice;
 f.StandardError = @getStandardError;    % Standard error calculator utility
 f.AllOptionPrices=@getAllOptionPrices;
 f.Prices = @getPrices;
-
+f.Variance= @getVariance;
 
 function X = sim(t,X)
     
+   maximum(iPath) = max(maximum(iPath),X(1));
    if t==0
       prices(:,1) = X(1);
+      if size(X,1)>1
+        variance(:,1) = X(2);
+      end
       iTime = iTime + 1;
    else
-     maximum(iPath) = max(maximum(iPath),X(1));
      if iTime < numTimes
         prices(iPath,iTime) = X(1);
+        if size(X,1)>1
+        variance(iPath,iTime) = X(2);
+        end
         iTime = iTime + 1; % Update the period counter
      else % The last period of the current path
         prices(iPath,numTimes) = X(1); % Save the terminal price for this path
+        if size(X,1)>1
+        variance(iPath,numTimes) = X(2);
+        end
         iTime = 2;         % Re-set the time period counter
         iPath = iPath + 1; % A new path will begin next time
         T = t - tStart;    % Accumulate the time-to-expiration
@@ -66,7 +76,7 @@ function value = getBarrierOptionPrice(strike,rate,barrier)
     
   values = zeros(numPaths,1);
   i = maximum < barrier; % Paths on which barrier was exceeded
-  values(i) = exp(-rate*T)*max(prices(i,numTimes)-strike,0);
+  values(i) = exp(-rate*T)*max(real(prices(i,numTimes))-strike,0);
   value = mean(values);
   
 end
@@ -89,7 +99,7 @@ function value = getAllOptionPrices(strike,rate,dt)
 end
 
 function value = getPrices()
-  value=prices;
+  value=prices(1,:);
 end
 
 function value = getStandardError(strike,rate,barrier,Antithetic)
@@ -105,4 +115,7 @@ function value = getStandardError(strike,rate,barrier,Antithetic)
   
 end
 
+function value =getVariance()
+    value=variance;
+end
 end % End of outer/primary function
