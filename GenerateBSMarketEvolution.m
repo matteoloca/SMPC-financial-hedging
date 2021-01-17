@@ -1,16 +1,16 @@
-function [W,B,P] = GenerateBSMarketEvolution(w0,N,mu,sigma,T,dt,r,opttype,strike,barrier,C,fixDates,allW,allT,sT)
+function [W,B,P] = GenerateBSMarketEvolution(w0,N,mu,sigma,T,dt,r,opttype,strike,barrier,C,fixDates,allW,allT,sT,overbarrier)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 B_tmp=zeros(T,N);
 %W=zeros(T+2,N);
 
 if (strcmp(opttype,'barrier')==1)
-    OptModel=BarrierOption(T+2,N);
+    OptModel=BarrierOption(T+1,N);
 else
     if (strcmp(opttype,'cliquet')==1)
-        OptModel=NapoleonCliquet(allT+2,N,fixDates,allW,sT);
+        OptModel=NapoleonCliquet(allT+1,N,fixDates,allW,sT);
     else
-        OptModel=EuropeanOption(T,N);
+        OptModel=EuropeanOption(T+1,N);
     end
 end
 mdl=gbm(mu,sigma,'StartState',w0);
@@ -32,6 +32,11 @@ else
     end
 end
 P=real(P); %Controllo messo perché ogni tanto risultato complesso
-
+if P>barrier
+    P=0;
+end
+if overbarrier
+    P=0;
+end
 end
 

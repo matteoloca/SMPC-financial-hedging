@@ -13,13 +13,14 @@ end
 
 p_sim=zeros(1,M);
 
+overbarrier=w_act>barrier;
 for i=1 : M
-    rng('shuffle');
+    
     if (strcmp(simtype,'heston')==1)
-        [w_sim(1,i),b_sim(1,i),p_sim(i)]=GenerateHestonMarketEvolution(w_act,Ns,mu,rho1,theta1,k,T,dt,r,variance,omega1,opttype,strike,barrier,C,fixDates,allW,allT,act_t);
+        [w_sim(1,i),b_sim(1,i),p_sim(i)]=GenerateHestonMarketEvolution(w_act,Ns,mu,rho1,theta1,k,T,dt,r,variance,omega1,opttype,strike,barrier,C,fixDates,allW,allT,act_t,overbarrier);
         %p_sim(i)=real(GenerateHestonOptionEvolution(strike,w0,Ns,opttype,mu,sigma,theta1,k,T,dt,r,y1,barrier));
     else
-        [w_sim(1,i),b_sim(1,i),p_sim(i)]=GenerateBSMarketEvolution(w_act,Ns,mu,sigma,T,dt,r,opttype,strike,barrier,C,fixDates,allW,allT,act_t);
+        [w_sim(1,i),b_sim(1,i),p_sim(i)]=GenerateBSMarketEvolution(w_act,Ns,mu,sigma,T,dt,r,opttype,strike,barrier,C,fixDates,allW,allT,act_t,overbarrier);
         %p_sim(i)=real(GenerateBSOptionEvolution(strike,w0,Ns,opttype,mu,sigma,theta1,k,T,dt,r,y1,barrier));
 
     end

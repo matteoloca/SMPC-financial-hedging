@@ -59,10 +59,16 @@ function X = sim(t,X)
   else
      if iTime < numTimes
         prices(iPath,iTime) = X(1);
+        if size(X,1)>1
+        variance(iPath,iTime) = X(2);
+        end
         iTime = iTime + 1;
         %t% Update the period counter
      else % The last period of the current path
         prices(iPath,numTimes) = X(1); % Save the terminal price for this path
+        if size(X,1)>1
+        variance(iPath,numTimes) = X(2);
+        end
         iTime = startingT+1;         % Re-set the time period counter
         iPath = iPath + 1; % A new path will begin next time
         T = t - tStart;    % Accumulate the time-to-expiration

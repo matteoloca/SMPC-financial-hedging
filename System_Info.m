@@ -3,8 +3,8 @@ function [strike,w0,M,Ns,L,T,dt,mu,r,sigma,theta1,k,y1,omega1,rho1,simtype,optty
 strike=100;
 w0 = 100;
 M=100;
-Ns=50;
-L=50;
+Ns=100;
+L=100;
 variance=1;
 T=24;
 dt=1/52;
@@ -22,10 +22,10 @@ theta1=.25;
 y1=.25;
 
 %MPC simulation Type: heston or bs
-simtype='heston';
+simtype='bs';
 
 %Hedging Type: barrier, european or cliquet
-opttype='cliquet';
+opttype='barrier';
 
 %Barrier data
 barrier=120;

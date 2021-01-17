@@ -1,4 +1,4 @@
-function P = GenerateHestonOptionEvolution(strike,w0,N,type,mu,rho1,theta1,k,T,dt,r,y1,omega1,barrier,C,fixDates)
+function [P,W] = GenerateHestonOptionEvolution(strike,w0,N,type,mu,rho1,theta1,k,T,dt,r,y1,omega1,barrier,C,fixDates)
 %GENERATEPRICESEVOLUTION Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -25,6 +25,7 @@ else
         P=OptModel.OptionPrice(strike,r);
     end
 end
-
+W_t=OptModel.Prices();
+W=W_t(:,2);
 end
 
